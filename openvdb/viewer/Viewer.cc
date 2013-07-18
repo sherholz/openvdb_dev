@@ -27,7 +27,14 @@
 // LIABILITY FOR ALL CLAIMS REGARDLESS OF THEIR BASIS EXCEED US$250.00.
 //
 ///////////////////////////////////////////////////////////////////////////
+#include <windows.h>
+#ifdef min
+#undef min
+#endif
 
+#ifdef max
+#undef max
+#endif
 #include "Viewer.h"
 
 #include "Camera.h"
@@ -46,8 +53,12 @@
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #else
+#if defined(_WIN32)
+#include <GL/glew.h>
+#else
 #include <GL/gl.h>
 #include <GL/glu.h>
+#endif
 #endif
 
 #include <GL/glfw.h>

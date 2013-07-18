@@ -27,7 +27,14 @@
 // LIABILITY FOR ALL CLAIMS REGARDLESS OF THEIR BASIS EXCEED US$250.00.
 //
 ///////////////////////////////////////////////////////////////////////////
+#include <windows.h>
+#ifdef min
+#undef min
+#endif
 
+#ifdef max
+#undef max
+#endif
 #include "RenderModules.h"
 #include <openvdb/util/logging.h>
 #include <math.h>

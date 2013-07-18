@@ -27,12 +27,18 @@
 // LIABILITY FOR ALL CLAIMS REGARDLESS OF THEIR BASIS EXCEED US$250.00.
 //
 ///////////////////////////////////////////////////////////////////////////
+#include <windows.h>
+#ifdef min
+#undef min
+#endif
 
+#ifdef max
+#undef max
+#endif
 #include "Font.h"
 
 #include <openvdb/Types.h> // for OPENVDB_START_THREADSAFE_STATIC_WRITE
 #include <GL/glfw.h>
-
 
 namespace openvdb_viewer {
 

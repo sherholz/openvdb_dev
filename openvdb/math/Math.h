@@ -69,6 +69,14 @@
     #define OPENVDB_NO_FP_EQUALITY_WARNING_END
 #endif
 
+
+#if defined( _MSC_VER)
+#include <boost/math/special_functions.hpp>
+//#include <amp_math.h>
+#define cbrtf boost::math::cbrt<float>
+#define cbrtl boost::math::cbrt<long>
+#endif
+
 namespace openvdb {
 OPENVDB_USE_VERSION_NAMESPACE
 namespace OPENVDB_VERSION_NAME {

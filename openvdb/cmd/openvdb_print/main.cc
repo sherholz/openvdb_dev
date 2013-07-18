@@ -40,7 +40,7 @@
 #include <pdi.h>
 #endif
 #ifdef _WIN32
-#include <openvdb/port/getopt.c>
+#include <openvdb/port/wingetopt.h>
 #else
 #include <unistd.h> // for getopt(), optarg
 #endif

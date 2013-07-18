@@ -442,6 +442,13 @@ GridBase::setIsInWorldSpace(bool world)
 
 ////////////////////////////////////////
 
+#ifdef min
+#undef min
+#endif
+
+#ifdef max
+#undef max
+#endif
 
 void
 GridBase::addStatsMetadata()
