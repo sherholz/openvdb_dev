@@ -425,6 +425,14 @@ ViewerImpl::viewGrids(const openvdb::GridCPtrVec& gridList, int width, int heigh
         return;
     }
 
+
+	GLenum err = glewInit();
+	if (GLEW_OK != err)
+	{
+	  //Problem: glewInit failed, something is seriously wrong.
+	  std::cout << "Error: " << glewGetErrorString(err) << "\n";
+	}
+
     glfwSetWindowTitle(mProgName.c_str());
     glfwSwapBuffers();
 
