@@ -429,7 +429,7 @@ public:
                 insertPoint(pos, index);
                 ++index;
 
-                int r = int(std::floor(mVoxelsPerLeaf / activeVoxels));
+                int r = int(std::floor((float)(mVoxelsPerLeaf / activeVoxels)));
                 for (int i = 1, I = mVoxelsPerLeaf - 2; i < I; ++i) {
                     pos = mTransform.indexToWorld(coords[i * r]);
                     insertPoint(pos, index);
