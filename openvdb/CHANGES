@@ -1,24 +1,105 @@
 OpenVDB Version History
 =======================
 
-Version 1.2.1 - In development
-    - Added a LevelSetRayIntersector for efficient hierarchical intersection
-      of rays with level sets.
-    - Added a Ray class and a Digital Differential Analyzer specialized for VDB.
-    - Added an option in the "From Particles" SOP to generate an alpha
-      mask that is very useful for constraining subsequent level set filtering
-      such that surface details are preserved.
-    - Improved the computational performance of masked Level Set filtering
-      by 20% for the most common cases.
-    - Added BoxStencil with support for trilinear interpolation.
+Version 2.0.0 - October 31, 2013
+    - Added a Python module with functions for basic manipulation of grids
+      (but no tools, yet).
+    - Added ray intersector tools for efficient, hierarchical intersection
+      of rays with level-set and generic volumes.
+    - Added a Ray class and a hierarchical Digital Differential Analyzer
+      for fast ray traversal.
+    - Added a fully multithreaded level set ray tracer and camera classes 
+      that mimic Houdini's cameras.
+    - Added a simple, command-line renderer (currently for level sets only).
+    - Implemented a new meshing scheme that produces topologically robust
+      two-manifold meshes and is twice as fast as the previous scheme.
+    - Implemented a new, topologically robust (producing two-manifold meshes)
+      level-set-based seamless fracture scheme.  The new scheme eliminates
+      visible scarring seen in the previous implementation by subdividing
+      internal, nonplanar quads near fracture seams.  In addition,
+      fracture seam points are now tagged, allowing them to be used
+      to drive pre-fracture dynamics such as local surface buckling.
+    - Improved the performance of Tree::evalActiveVoxelBoundingBox() and
+      Tree::activeVoxelCount(), and significantly improved the performance
+      of Tree::evalLeafBoundingBox() (by about 30x).
+    - Added a tool (and a Houdini SOP) that fills a volume with
+      adaptively-sized overlapping or non-overlapping spheres.
+    - Added a Ray SOP that can be used to perform geometry projections
+      using level-set ray intersections or closest-point queries.
+    - Added a tool that performs accelerated closest surface point queries
+      from arbitrary points in world space to narrow-band level sets.
+    - Increased the speed of masked level set filtering by 20% for
+      the most common cases.
+    - Added math::BoxStencil, with support for trilinear interpolation 
+      and gradient computation.
+    - Added Tree::topologyIntersection(), which intersects a tree's active
+      values with those of another tree, and Tree::topologyDifference(),
+      which performs topological subtraction of one tree's active values
+      from another's.  In both cases, the ValueTypes of the two trees
+      need not be the same.
+    - Added Tree::activeTileCount(), which returns the number of active tiles
+      in a tree.
+    - Added math::MinIndex() and math::MaxIndex(), which find the minimum
+      and maximum components of a vector without any branching.
+    - Added math::BBox::minExtent(), which returns a bounding box's
+      shortest axis.
+    - The default math::BBox constructor now generates an invalid bounding
+      box rather than an empty bounding box positioned at the origin.
+      The new behavior is consistent with math::CoordBBox.
+      [Thanks to Rick Hankins for suggesting this fix.]
+    - Added CoordBBox::reset(), which resets a bounding box to its initial,
+      invalid state.
+    - Fixed a bug in the default ScaleMap constructor that left some data
+      used in the inverse uninitialized.
+    - Added MapBase::applyJT(), which applies the Jacobian transpose to
+      a vector (the Jacobian transpose takes a range-space vector to a
+      domain-space vector, e.g., world to index), and added
+      MapBase::inverseMap(), which returns a new map representing
+      the inverse of the original map (except for NonlinearFrustumMap,
+      which does not currently have a defined inverse map).
+      Note: Houdini 12.5 uses an earlier version of OpenVDB, and maps
+      created with that version lack virtual table entries for these
+      new methods, so do not call these methods from Houdini 12.5.
+    - Reimplemented math::RandomInt using Boost.Random instead of rand()
+      (which is not thread-safe), and deprecated math::randUniform()
+      and added math::Random01 to replace it. 
+    - Modified tools::copyFromDense() and tools::copyToDense() to allow
+      for implicit type conversion (e.g., between a Dense<Int32> and a
+      FloatTree) and fixed several bugs in tools::CopyFromDense.
+    - Fixed bugs in math::Stats and math::Histogram that could produce
+      NaNs or other incorrect behavior if certain methods were called
+      on populations of size zero.
+    - Renamed tolerance<T> to math::Tolerance<T> and negative<T>() to
+      math::negative<T>() and removed math::toleranceValue<T>().
+    - Implemented a closest point on line segment algorithm,
+      math::closestPointOnSegmentToPoint().
     - Fixed meshing issues relating to masking and automatic partitioning.
-    - Fixed a bug in the "Level Set Smooth", "Level Set Renormalize" and 
-      "Level Set Offset" SOPs that caused the Group name to be ignored.   
-    - Fixed a bug in the default constructor for ScaleMaps that would
-      leave some data used in the inverse unitialized.
-    - Fixed build issues under OSX and Windows [Contributed by Edward Lam].
-    - Fixed bugs in Stats::print and Histogram::print that could lead to
-      incorrect behavior if called before any elements were added.
+    - Grid::merge() and Tree::merge() now accept an optional MergePolicy
+      argument that specifies one of three new merging schemes.  (The old
+      merging scheme, which is no longer available, used logic for each tree
+      level that was inconsistent with the other levels and that could result
+      in active tiles being replaced with nodes having only inactive values.)
+    - Renamed LeafNode::coord2offset(), LeafNode::offset2coord() and
+      LeafNode::offset2globalCoord() to coordToOffset(), offsetToLocalCoord()
+      and offsetToGlobalCoord(), respectively, and likewise for InternalNode.
+    - Replaced Tree methods setValueOnMin(), setValueOnMax() and
+      setValueOnSum() with tools::setValueOnMin(), tools::setValueOnMax() and
+      tools::setValueOnSum() (and a new tools::setValueOnMult()) and added
+      Tree::modifyValue() and Tree::modifyValueAndActiveState(), which modify
+      voxel values in place via user-supplied functors.  Similarly, replaced
+      ValueAccessor::setValueOnSum() with ValueAccessor::modifyValue()
+      and ValueAccessor::modifyValueAndActiveState(), and added a modifyValue()
+      method to all value iterators.
+    - Removed LeafNode::addValue() and LeafNode::scaleValue().
+    - Added convenience classes Tree3 and Tree5 for custom tree configurations.
+    - Added an option to the From Particles SOP to generate an alpha mask,
+      which can be used to constrain level set filtering so as to preserve
+      surface details.
+    - The mesh to volume converter now handles point-degenerate polygons.
+    - Fixed a bug in the Level Set Smooth, Level Set Renormalize and 
+      Level Set Offset SOPs that caused the group name to be ignored.   
+    - Fixed various OS X and Windows build issues.
+      [Contributions from SESI and DD]
 
 Version 1.2.0 - June 28, 2013
     - Level set filters now accept an optional alpha mask grid.

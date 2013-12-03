@@ -618,10 +618,12 @@ public:
     /// Reduce the memory footprint of this grid by increasing its sparseness.
     virtual void pruneGrid(float tolerance = 0.0);
 
-    /// @brief Transfer active voxels from another grid to this grid
-    /// wherever those voxels coincide with inactive voxels in this grid.
-    /// @note This operation always empties the other tree.
-    void merge(Grid& other) { tree().merge(other.tree()); }
+    /// @brief Efficiently merge another grid into this grid using one of several schemes.
+    /// @details This operation is primarily intended to combine grids that are mostly
+    /// non-overlapping (for example, intermediate grids from computations that are
+    /// parallelized across disjoint regions of space).
+    /// @warning This operation always empties the other grid.
+    void merge(Grid& other, MergePolicy policy = MERGE_ACTIVE_STATES);
 
     /// @brief Union this grid's set of active values with the active values
     /// of the other grid, whose value type may be different.
@@ -638,7 +640,26 @@ public:
     /// are marked as active in this grid but left with their original values.
     template<typename OtherTreeType>
     void topologyUnion(const Grid<OtherTreeType>& other) { tree().topologyUnion(other.tree()); }
-    /// @todo topologyIntersection
+
+    /// @brief Intersects this tree's set of active values with the active values
+    /// of the other tree, whose @c ValueType may be different.
+    /// @details The resulting state of a value is active only if the corresponding 
+    /// value was already active AND if it is active in the other tree. Also, a
+    /// resulting value maps to a voxel if the corresponding value
+    /// already mapped to an active voxel in either of the two grids
+    /// and it maps to an active tile or voxel in the other grid.
+    ///
+    /// @note This operation can delete branches in this grid if they
+    /// overlap with inactive tiles in the other grid. Likewise active
+    /// voxels can be turned into unactive voxels resulting in leaf
+    /// nodes with no active values. Thus, it is recommended to
+    /// subsequently call prune. 
+    template<typename OtherTreeType>
+    void topologyIntersection(const Grid<OtherTreeType>& other)
+    {
+        tree().topologyIntersection(other.tree());
+    }
+
     /// @todo topologyDifference
 
     //
@@ -1106,6 +1127,14 @@ inline void
 Grid<TreeT>::pruneGrid(float tolerance)
 {
     this->prune(ValueType(zeroVal<ValueType>() + tolerance));
+}
+
+
+template<typename TreeT>
+inline void
+Grid<TreeT>::merge(Grid& other, MergePolicy policy)
+{
+    tree().merge(other.tree(), policy);
 }
 
 

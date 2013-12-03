@@ -271,8 +271,13 @@ validateGeometry(const GU_Detail& geometry, std::string& warning, Interrupter* b
 
     if (needconvert) {
         GU_ConvertParms parms;
+#if (UT_VERSION_INT < 0x0d0000b1) // before 13.0.177
         parms.fromType = GEO_PrimTypeCompat::GEOPRIMALL;
         parms.toType = GEO_PrimTypeCompat::GEOPRIMPOLY;
+#else
+        parms.setFromType(GEO_PrimTypeCompat::GEOPRIMALL);
+        parms.setToType(GEO_PrimTypeCompat::GEOPRIMPOLY);
+#endif
         geoPtr->convert(parms);
     }
 
@@ -415,9 +420,10 @@ PrimCpyOp::operator()(const GA_SplittableRange &r) const
 ////////////////////////////////////////
 
 
-VertexNormalOp::VertexNormalOp(GU_Detail& detail, const GA_PrimitiveGroup *interiorPrims)
+VertexNormalOp::VertexNormalOp(GU_Detail& detail, const GA_PrimitiveGroup *interiorPrims, float angle)
     : mDetail(detail)
     , mInteriorPrims(interiorPrims)
+    , mAngle(angle)
 {
     GA_RWAttributeRef attributeRef =
         detail.findFloatTuple(GA_ATTRIB_VERTEX, "N", 3);
@@ -459,7 +465,7 @@ VertexNormalOp::operator()(const GA_SplittableRange& range) const
                         primOffset = mDetail.vertexPrimitive(vtxOffset);
                         if (interiorPrim == isInteriorPrim(primOffset)) {
                             tmpN = mDetail.getGEOPrimitive(primOffset)->computeNormal();
-                            if (tmpN.dot(primN) > 0.7) avgN += tmpN;
+                            if (tmpN.dot(primN) > mAngle) avgN += tmpN;
                         }
                         vtxOffset = mDetail.vertexToNextVertex(vtxOffset);
                     }
